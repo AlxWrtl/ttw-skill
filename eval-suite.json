@@ -1,0 +1,125 @@
+{
+  "triggers": [
+    {"prompt": "implement this using apex methodology", "should_trigger": true},
+    {"prompt": "use the apex framework for this feature", "should_trigger": true},
+    {"prompt": "/apex add authentication to the app", "should_trigger": true},
+    {"prompt": "run apex with -a flag to auto-implement the payment module", "should_trigger": true},
+    {"prompt": "apex -s to save the output for the new dashboard feature", "should_trigger": true},
+    {"prompt": "fix this bug in the login form", "should_trigger": false},
+    {"prompt": "what does this function do?", "should_trigger": false},
+    {"prompt": "run the tests and tell me what fails", "should_trigger": false},
+    {"prompt": "review this PR for code quality", "should_trigger": false},
+    {"prompt": "explain how the caching layer works", "should_trigger": false}
+  ],
+  "test_cases": [
+    {
+      "name": "step-00-initialize",
+      "prompt": "Start apex for adding a new user settings page. We are at step 00.",
+      "assertions": [
+        {"type": "contains", "value": "git status", "description": "Step 00 must check git status before starting"},
+        {"type": "contains", "value": "output", "description": "Step 00 must set up output directory"},
+        {"type": "contains", "value": "context", "description": "Step 00 must capture task context"},
+        {"type": "excludes", "value": "implement", "description": "Step 00 must not start implementing — only initialize"},
+        {"type": "pattern", "value": "00|[Ii]nitializ", "description": "Must explicitly reference step 00 initialization"}
+      ]
+    },
+    {
+      "name": "full-9-step-execution",
+      "prompt": "Execute all apex steps (-a flag) for adding email notifications to the app. Run every step from 00 to 09.",
+      "assertions": [
+        {"type": "contains", "value": "00", "description": "Must execute step 00 Initialize"},
+        {"type": "contains", "value": "01", "description": "Must execute step 01 Analyze"},
+        {"type": "contains", "value": "04", "description": "Must execute step 04 Execute"},
+        {"type": "contains", "value": "09", "description": "Must execute step 09 Finish"},
+        {"type": "contains", "value": "Finish", "description": "Must reach the Finish step"},
+        {"type": "pattern", "value": "[Aa]nalyze|[Pp]lan|[Ee]xecute|[Tt]est|[Dd]ocument", "description": "Must name each major phase in sequence"}
+      ]
+    },
+    {
+      "name": "apex-auto-flag",
+      "prompt": "apex -a implement the CSV export feature",
+      "assertions": [
+        {"type": "contains", "value": "auto", "description": "Must acknowledge -a flag enables auto mode"},
+        {"type": "pattern", "value": "step|[Ss]tep\\s*0[0-9]", "description": "Must reference step numbers during execution"},
+        {"type": "excludes", "value": "manual approval", "description": "Auto mode must not pause for manual approval at each step"},
+        {"type": "pattern", "value": "[Ii]mplement|[Ee]xecute|[Pp]lan", "description": "Must proceed through plan and implement phases"}
+      ]
+    },
+    {
+      "name": "apex-examine-flag",
+      "prompt": "apex -e review the current implementation for security issues",
+      "assertions": [
+        {"type": "contains", "value": "06", "description": "Examine flag must jump to step 06"},
+        {"type": "pattern", "value": "[Ee]xamine|[Ss]ecurity|[Pp]erformance|[Mm]aintainab", "description": "Must focus on security/performance/maintainability in step 06"},
+        {"type": "excludes", "value": "step 00", "description": "Examine flag must not restart from step 00"}
+      ]
+    }
+  ],
+  "edge_cases": [
+    {
+      "name": "missing-project-claude-md",
+      "category": "missing",
+      "prompt": "apex -a implement OAuth but this project has no CLAUDE.md and no documented conventions",
+      "expected_behavior": "Should warn about missing CLAUDE.md but proceed with explicit documentation of assumptions in step 00",
+      "assertions": [
+        {"type": "contains", "value": "CLAUDE.md", "description": "Must reference missing CLAUDE.md as a risk factor"},
+        {"type": "pattern", "value": "[Pp]roceed|[Ww]arn|[Nn]ot found|[Mm]issing", "description": "Must warn about missing conventions context but not block"}
+      ]
+    },
+    {
+      "name": "conflicting-steps",
+      "category": "invalid",
+      "prompt": "Start apex at step 04-Execute but we have not done step 02-Plan yet",
+      "expected_behavior": "Should warn about skipping planning steps and recommend going back to step 02 first",
+      "assertions": [
+        {"type": "pattern", "value": "[Ww]arn|[Ss]kip|[Dd]epend|[Rr]ecommend|[Ss]equence", "description": "Must warn about dependency violation and recommend sequential execution"}
+      ]
+    },
+    {
+      "name": "skip-steps-request",
+      "category": "invalid",
+      "prompt": "apex: skip steps 01 through 04 and go straight to step 05-Test",
+      "expected_behavior": "Should warn that testing without analysis and planning creates risk of untested code paths",
+      "assertions": [
+        {"type": "pattern", "value": "[Ww]arn|[Rr]isk|[Ss]kip|[Nn]ot recommend|[Cc]aution", "description": "Must warn about the risk of skipping analysis and planning steps"}
+      ]
+    },
+    {
+      "name": "huge-codebase",
+      "category": "scale",
+      "prompt": "apex -a refactor the entire monorepo — it has 500+ files across 12 services",
+      "expected_behavior": "Should recommend scoping the work into sub-tasks or milestones before running apex on each",
+      "assertions": [
+        {"type": "pattern", "value": "[Ss]cope|[Ss]plit|[Mm]ilestone|[Pp]hase|[Ss]ub-task|[Cc]larif", "description": "Must recommend breaking 500+ file refactor into smaller milestones"}
+      ]
+    },
+    {
+      "name": "no-tests-available",
+      "category": "missing",
+      "prompt": "apex step 05-Test but there is no test framework configured in this project",
+      "expected_behavior": "Should warn about missing test framework and recommend setting one up or falling back to manual verification",
+      "assertions": [
+        {"type": "pattern", "value": "[Nn]o test|[Mm]anual|[Ss]etup|[Ff]ramework|[Ww]arn", "description": "Must warn about missing test framework and propose alternatives"}
+      ]
+    },
+    {
+      "name": "single-step task — apex overkill",
+      "category": "minimal",
+      "prompt": "apex -a rename the variable `x` to `userId` in one function in utils.ts",
+      "expected_behavior": "Should flag that apex is overkill for a single-variable rename and recommend using the editor directly or a quick-fix agent",
+      "assertions": [
+        {"type": "pattern", "value": "[Oo]verkill|[Ss]imple|[Qq]uick.fix|[Ss]ingle file|[Ss]mall change", "description": "Must flag that apex is not appropriate for a one-line rename"},
+        {"type": "pattern", "value": "[Rr]ecommend|[Ss]uggest|[Ee]ditor|[Dd]irect", "description": "Must recommend a lighter-weight approach"}
+      ]
+    },
+    {
+      "name": "malformed-flag",
+      "category": "malformed",
+      "prompt": "apex --unknownflag implement the feature",
+      "expected_behavior": "Should reject the unknown flag and print the valid flags: -a, -s, -e, -t, -h",
+      "assertions": [
+        {"type": "pattern", "value": "[Uu]nknown|[Ii]nvalid|[Hh]elp|[Ff]lag|usage", "description": "Must reject unknown flag and show valid flags"}
+      ]
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 # Step 09b: Obsidian Session Note
 
 YOU ARE A SCRIBE. Create a session note in the Obsidian vault capturing what was done,
-decisions taken, and next steps — following the Alx vault conventions.
+decisions taken, and next steps — following the vault conventions.
 
 ## Vault
 
@@ -43,7 +43,7 @@ Target path: `02-Projets/{project}/sessions/{filename}`
 
 ### 4. Write the note
 
-Template (respect Alx conventions strictly):
+Template (respect the vault conventions strictly):
 
 ```markdown
 ---
@@ -103,9 +103,9 @@ aliases:
   - `tags:` as a YAML **list** (one per line with `  - `), NEVER prefixed with `#` inside YAML (invalidates the tag)
   - `aliases:` as a list for alternate search names
 - **Absolute wikilinks with alias pipe** — `[[02-Projets/MyApp/MyApp|MyApp]]` (robust + readable). Absolute paths prevent ambiguity when generating programmatically; alias keeps display clean.
-- **Project-note wikilink on first line after frontmatter** — maintains Alx convention for quick navigation
+- **Project-note wikilink on first line after frontmatter** — maintains the vault convention for quick navigation
 - **No orphan links** — Grep to verify every `[[...]]` target exists OR clearly flag as `(a creer)`
-- **French content** — the vault is in French per Alx conventions
+- **French content** — the vault is in French per its conventions (adapt to yours)
 - **Do NOT modify `decisions/` files** — only link to them
 - **Do NOT restructure `01-Inbox/` content**
 

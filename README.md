@@ -8,12 +8,12 @@ typo fix never pays for the full high-stakes protocol.
 
 ## At a glance
 
-One question picks the lane: yellow = the decision, blue = steps, green =
-where a run ends. Details in [How a run works](#how-a-run-works).
+One question picks the lane: yellow = the decision and the named tiers,
+blue = steps, green = where a run ends. Details in [How a run works](#how-a-run-works).
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/simple-dark.svg">
-  <img alt="TTW at a glance: your task meets one question, how big and how risky is the change. No file changes: just answer. Small and safe (up to 4 files, 30 lines): the quick lane fixes it directly (failing test first, edit, checks), escalates to the full lane if it turns out too big, and ends at a merged pull request. Bigger, a bug or sensitive: the full lane plans (goal and how each result is proven), has a separate agent write failing tests, implements with a fresh agent on the planned files only, verifies (checks and every goal proven, up to 2 fix rounds back to Implement), adds an extra review on bigger or risky work, then merges the pull request and writes a session note." src="docs/simple-light.svg">
+  <img alt="TTW at a glance: your task meets one question, how big and how risky is the change. No file changes (pure research): just answer. Small and safe (up to 4 files, 30 lines), the Direct tier: the quick lane fixes it directly (failing test first, edit, checks), then ttw-tier re-checks the real diff and escalates to the full lane if it turns out too big; it ends at a merged pull request. Three named tiers enter the full lane: Standard (a bigger change), Diagnosis (a bug: reproduce first, debugger agent) and High-stakes (sensitive: secrets, permissions, guard hooks, irreversible work, prod deploy). The full lane plans (goal and how each result is proven), has a separate agent write failing tests, implements with a fresh agent on the planned files only, verifies (checks and every goal proven, up to 2 fix rounds back to Implement), then runs an extra review by tier: tests -t for Standard and High-stakes, code review -x for Diagnosis and High-stakes, second opinion -e for High-stakes; it then merges the pull request and writes a session note." src="docs/simple-light.svg">
 </picture>
 
 <details><summary>Detailed flow (every step and flag)</summary>

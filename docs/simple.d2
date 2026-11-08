@@ -61,6 +61,17 @@ classes: {
       bold: true
     }
   }
+  tier: {
+    shape: hexagon
+    style: {
+      fill: ${gate-fill}
+      stroke: ${gate-stroke}
+      font-size: 15
+      font-color: ${muted}
+      stroke-width: 1
+      bold: true
+    }
+  }
   why: {
     style: {
       font-size: 16
@@ -77,8 +88,14 @@ answer: "Just answer" {class: [box; end]}
 
 quick: "Quick lane: fix it directly" {
   class: [box; step]
-  s: "failing test first\n→ edit → checks" {class: sub}
+  s: "Direct tier: failing test first\n→ edit → checks; then ttw-tier\nre-checks the real diff" {class: sub}
 }
+
+# Three named tiers enter the full lane; first match wins:
+# Diagnosis > High-stakes > Standard.
+standard: "Standard" {class: tier}
+diagnosis: "Diagnosis" {class: tier}
+high: "High-stakes" {class: tier}
 
 # The full lane reads as a snake: left to right, then down and back left.
 # The grid fills column by column, hence the declaration order.
@@ -101,7 +118,7 @@ full: "Full lane" {
 
   review: "Extra review" {
     class: [box; step]
-    s: "tests, code review, second opinion\non bigger or risky work" {class: sub}
+    s: "tests -t: Standard, High-stakes\ncode review -x: Diagnosis, High-stakes\nsecond opinion -e: High-stakes" {class: sub}
   }
 
   impl: "Implement" {
@@ -124,9 +141,14 @@ pr: "Pull request, merged" {class: [box; end]}
 note: "Session note" {class: [box; end]}
 
 task -> size: {class: why}
-size -> answer: "No file changes" {class: why}
+size -> answer: "No file changes\n(pure research)" {class: why}
 size -> quick: "Small and safe\n≤ 4 files, ≤ 30 lines" {class: why}
-size -> full: "Bigger, a bug,\nor sensitive" {class: why}
+size -> standard: "Bigger change" {class: why}
+size -> diagnosis: "A bug: reproduce\nfirst, debugger agent" {class: why}
+size -> high: "Sensitive: secrets,\npermissions, guard hooks,\nirreversible, prod deploy" {class: why}
+standard -> full: {class: why}
+diagnosis -> full: {class: why}
+high -> full: {class: why}
 quick -> full: "too big after all" {
   class: why
   style.stroke-dash: 5

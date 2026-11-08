@@ -8,15 +8,26 @@ typo fix never pays for the full high-stakes protocol.
 
 ## At a glance
 
-How a run flows, from the tier gate to the end. Yellow = gates, tiers and
-decisions (hexagons), blue = steps, dashed purple = runs only under its
-flag, green pill = end of a run; grey panels group the Direct lane and the
-phase pipeline. Each part is detailed in [How a run works](#how-a-run-works).
+One question picks the lane: yellow = the decision, blue = steps, green =
+where a run ends. Details in [How a run works](#how-a-run-works).
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/simple-dark.svg">
+  <img alt="TTW at a glance: your task meets one question, how big and how risky is the change. No file changes: just answer. Small and safe (up to 4 files, 30 lines): the quick lane fixes it directly (failing test first, edit, checks), escalates to the full lane if it turns out too big, and ends at a merged pull request. Bigger, a bug or sensitive: the full lane plans (goal and how each result is proven), has a separate agent write failing tests, implements with a fresh agent on the planned files only, verifies (checks and every goal proven, up to 2 fix rounds back to Implement), adds an extra review on bigger or risky work, then merges the pull request and writes a session note." src="docs/simple-light.svg">
+</picture>
+
+<details><summary>Detailed flow (every step and flag)</summary>
+
+Yellow = gates, tiers and decisions (hexagons), blue = steps, dashed purple =
+runs only under its flag, green pill = end of a run; grey panels group the
+Direct lane and the phase pipeline.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/overview-dark.svg">
   <img alt="TTW run overview: the tier gate sends a task to Pure research, Direct, Diagnosis, High-stakes or Standard. Direct runs inline (branch, baseline gate, red test, edit, machine gate, ttw-tier re-check, self-check, ship) and escalates to 02-plan when a path leaves Files:, the tier re-check fails or an AC is not met. Diagnosis, High-stakes and Standard run the pipeline 00-init, 01-analyze, 01b-obsidian, 02-plan, 02c-verify, test-author, 03-execute, 04-validate, then the terminal router to 07/08 tests, 05-examine, 06-resolve, 09-finish, 09b-obsidian-note and COMPLETE." src="docs/overview-light.svg">
 </picture>
+
+</details>
 
 ## Install
 
@@ -421,7 +432,8 @@ rewrite pushed history without asking.
 ├── SKILL.md                          # router: tier gate, flags, contract
 ├── eval-suite.json                   # skill eval cases
 ├── docs/                             # README diagrams
-│   ├── overview.d2, verify-loop.d2   # D2 sources
+│   ├── simple.d2                     # at-a-glance diagram
+│   ├── overview.d2, verify-loop.d2   # detailed D2 sources
 │   ├── palette.d2, dark.d2           # light palette, dark override
 │   └── *-light.svg, *-dark.svg       # rendered, committed
 └── steps/
@@ -452,7 +464,7 @@ both themes from `docs/` in bash with:
 
 ```
 E='--elk-nodeNodeBetweenLayers 36 --elk-edgeNodeBetweenLayers 16 --elk-padding [top=32,left=24,bottom=48,right=24]'
-for f in overview verify-loop; do d2 $E $f.d2 $f-light.svg; cat $f.d2 dark.d2 | d2 $E - $f-dark.svg; done
+for f in simple overview verify-loop; do d2 $E $f.d2 $f-light.svg; cat $f.d2 dark.d2 | d2 $E - $f-dark.svg; done
 ```
 
 ## Companion tools

@@ -8,77 +8,15 @@ typo fix never pays for the full high-stakes protocol.
 
 ## At a glance
 
-How a run flows, from the tier gate to the end. Yellow = gates and
-decisions, blue = steps, dashed purple = runs only under its flag, green =
-end of a run. Each part is detailed in [How a run works](#how-a-run-works).
+How a run flows, from the tier gate to the end. Yellow = gates, tiers and
+decisions (hexagons), blue = steps, dashed purple = runs only under its
+flag, green pill = end of a run; grey panels group the Direct lane and the
+phase pipeline. Each part is detailed in [How a run works](#how-a-run-works).
 
-```mermaid
-flowchart TD
-  gate["Task → tier gate<br>Files: + Est-lines:"] --> tier{"Tier?<br>first match wins"}
-  tier -->|"zero file change"| research(["Pure research<br>answer, no branch, no PR"])
-  tier -->|"bug"| diag(["Diagnosis"])
-  tier -->|"sensitive surface"| high(["High-stakes"])
-  tier -->|"≤ 4 files, ≤ 30 lines"| d1
-  tier -->|"everything else"| std(["Standard"])
-
-  subgraph direct["Direct — coordinator inline, no subagent"]
-    d1["branch + 00-context.md"] --> d2["baseline gate"]
-    d2 --> d3["red test first"]
-    d3 --> d4["edit inline, Files: only"]
-    d4 --> d5["machine gate"]
-    d5 --> d6{"ttw-tier --base {trunk}<br>tier=direct and gate green?"}
-    d6 -->|"yes"| d7["self-check: each AC vs git diff"]
-    d7 -->|"all met"| d8(["ship per -pr"])
-    d4 -->|"path outside Files:"| esc
-    d6 -->|"no"| esc
-    d7 -->|"AC not met"| esc
-    esc["escalate<br>branch + diff kept"]
-  end
-
-  subgraph pipe["Standard / Diagnosis / High-stakes — fresh subagent per phase"]
-    init["00-init + 00b-save<br>baseline gate"]
-    init -->|"Diagnosis, or files unknown"| ana["01-analyze"]
-    init -->|"files known, -o"| obs["01b-obsidian"]
-    init -->|"files known"| plan["02-plan<br>+ 02b-tasks under -k"]
-    ana -->|"-o"| obs
-    ana --> plan
-    obs --> plan
-    plan -->|"-v"| v2c["02c-verify"]
-    plan -->|"-f"| tf["test-author<br>failing tests"]
-    plan --> exe["03-execute<br>typed implementer<br>(debugger in Diagnosis)"]
-    v2c -->|"-f"| tf
-    v2c --> exe
-    tf --> exe
-    exe -->|"verify loop"| val["04-validate"]
-    val --> rt{"terminal router<br>first match wins"}
-    rt -->|"-t, from 04 only"| tst["07-tests → 08-run-tests"]
-    tst --> rt
-    rt -->|"-x, not yet run"| exm["05-examine"]
-    exm --> rt
-    rt -->|"Critical / Important"| res["06-resolve"]
-    res --> rt
-    rt -->|"-pr"| fin["09-finish<br>commit, PR, merge"]
-    rt -->|"-n"| note["09b-obsidian-note"]
-    rt -->|"else"| done(["COMPLETE<br>summary"])
-    fin -->|"-n"| note
-    fin --> done
-    note --> done
-  end
-
-  diag --> init
-  high --> init
-  std --> init
-  esc -->|"Standard or High-stakes flags"| plan
-
-  classDef gate fill:#fde68a,stroke:#b45309,color:#1f2937
-  classDef step fill:#bfdbfe,stroke:#1d4ed8,color:#1f2937
-  classDef opt fill:#e9d5ff,stroke:#7e22ce,color:#1f2937,stroke-dasharray:4 3
-  classDef term fill:#bbf7d0,stroke:#15803d,color:#1f2937
-  class gate,tier,diag,high,std,d2,d5,d6,rt gate
-  class d1,d3,d4,d7,esc,init,ana,plan,exe,val,res step
-  class obs,v2c,tf,tst,exm,fin,note opt
-  class research,d8,done term
-```
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/overview-dark.svg">
+  <img alt="TTW run overview: the tier gate sends a task to Pure research, Direct, Diagnosis, High-stakes or Standard. Direct runs inline (branch, baseline gate, red test, edit, machine gate, ttw-tier re-check, self-check, ship) and escalates to 02-plan when a path leaves Files:, the tier re-check fails or an AC is not met. Diagnosis, High-stakes and Standard run the pipeline 00-init, 01-analyze, 01b-obsidian, 02-plan, 02c-verify, test-author, 03-execute, 04-validate, then the terminal router to 07/08 tests, 05-examine, 06-resolve, 09-finish, 09b-obsidian-note and COMPLETE." src="docs/overview-light.svg">
+</picture>
 
 ## Install
 
@@ -281,19 +219,6 @@ coordinator re-briefs with what was missing, changes approach, or asks the
 user — never re-spawns an identical brief, never restates it as done. Before
 spawning phase N+1 it checks every field of phase N is filled.
 
-```mermaid
-sequenceDiagram
-  participant C as Coordinator
-  participant A as Phase agent (fresh context)
-  participant D as .claude/output/ttw/{task-id}/
-  C->>A: brief — objective, output schema, task + prior summaries, plan path, boundaries
-  A-->>C: bounded summary (PHASE … HANDOFF) or BLOCKED
-  Note over A: raw context discarded
-  C->>C: completeness check — every field filled
-  C->>D: write NN-{phase}.md
-  C->>A: next phase — a new fresh agent
-```
-
 ### Step-by-step pipeline
 
 - **step-00-init** — coordinator setup: creates `00-context.md` first, records
@@ -426,35 +351,10 @@ After every execute wave:
    the correction-grant hook reads to grant one more round. Never weaken a
    check to make it pass; never declare success on partial green.
 
-```mermaid
-flowchart TD
-  wave["execute wave or correction round returns"] --> mg["1. machine gate<br>parse, typecheck, lint, tests"]
-  mg --> diff["2. read summary + real diff"]
-  diff --> ac["3. coordinator runs each AC's command"]
-  ac --> hs{"High-stakes?"}
-  hs -->|"yes"| ext["4. external detector (-e)"]
-  ext -->|"no usable verdict"| fable["Fable fallback pass"]
-  ext --> green
-  fable --> green
-  hs -->|"no"| green{"every AC green?<br>non prouvé = not green"}
-  green -->|"yes"| next(["next step"])
-  green -->|"no"| corr["5. CORRECTIONS list<br>file: problem → expected fix"]
-  corr --> budget{"correction-budget hook<br>round left? max 2"}
-  budget -->|"yes"| rebrief["re-brief an opus implementer<br>TTW-CORRECTION-ROUND: run-id"]
-  rebrief --> wave
-  budget -->|"spent"| grant{"user types<br>ttw: +1 tour?"}
-  grant -->|"yes, one more round"| rebrief
-  grant -->|"no"| stop(["stop: deliver residuals<br>+ failing output"])
-
-  classDef gate fill:#fde68a,stroke:#b45309,color:#1f2937
-  classDef step fill:#bfdbfe,stroke:#1d4ed8,color:#1f2937
-  classDef opt fill:#e9d5ff,stroke:#7e22ce,color:#1f2937,stroke-dasharray:4 3
-  classDef term fill:#bbf7d0,stroke:#15803d,color:#1f2937
-  class mg,hs,green,budget,grant gate
-  class wave,diff,ac,corr,rebrief step
-  class ext,fable opt
-  class next,stop term
-```
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/verify-loop-dark.svg">
+  <img alt="Verify loop: after an execute wave or correction round, machine gate, read summary and real diff, run each AC's command; High-stakes adds the external detector and a Fable fallback. Every AC green goes to the next step; otherwise a CORRECTIONS list, then the correction-budget hook: a round left re-briefs an opus implementer, a spent budget stops with the residuals unless the user types ttw: +1 tour." src="docs/verify-loop-light.svg">
+</picture>
 
 ### High-stakes additions (`steps/HIGH-STAKES.md`)
 
@@ -520,6 +420,10 @@ rewrite pushed history without asking.
 ├── LICENSE
 ├── SKILL.md                          # router: tier gate, flags, contract
 ├── eval-suite.json                   # skill eval cases
+├── docs/                             # README diagrams
+│   ├── overview.d2, verify-loop.d2   # D2 sources
+│   ├── palette.d2, dark.d2           # light palette, dark override
+│   └── *-light.svg, *-dark.svg       # rendered, committed
 └── steps/
     ├── COMMANDS.md                   # command classes and ship shapes
     ├── DIRECT.md                     # the whole Direct run
@@ -541,6 +445,14 @@ rewrite pushed history without asking.
     ├── step-08-run-tests.md          # test loop
     ├── step-09-finish.md             # commit, PR, merge (-pr)
     └── step-09b-obsidian-note.md     # session note (-n)
+```
+
+`docs/*.d2` are the diagram sources (D2 0.9.0, ELK layout). Regenerate
+both themes from `docs/` in bash with:
+
+```
+E='--elk-nodeNodeBetweenLayers 36 --elk-edgeNodeBetweenLayers 16 --elk-padding [top=32,left=24,bottom=48,right=24]'
+for f in overview verify-loop; do d2 $E $f.d2 $f-light.svg; cat $f.d2 dark.d2 | d2 $E - $f-dark.svg; done
 ```
 
 ## Companion tools

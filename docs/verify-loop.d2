@@ -1,0 +1,95 @@
+# TTW verify loop: runs after every execute wave or correction round.
+...@palette
+
+direction: down
+style.fill: transparent
+
+classes: {
+  n: {
+    style: {
+      font-size: 15
+      font-color: ${text}
+      stroke-width: 2
+      border-radius: 10
+      bold: false
+    }
+  }
+  gate: {
+    style: {
+      fill: ${gate-fill}
+      stroke: ${gate-stroke}
+    }
+  }
+  decision: {
+    shape: hexagon
+    style: {
+      fill: ${gate-fill}
+      stroke: ${gate-stroke}
+      bold: true
+    }
+  }
+  step: {
+    style: {
+      fill: ${step-fill}
+      stroke: ${step-stroke}
+    }
+  }
+  opt: {
+    style: {
+      fill: ${opt-fill}
+      stroke: ${opt-stroke}
+      stroke-dash: 4
+    }
+  }
+  term: {
+    style: {
+      fill: ${term-fill}
+      stroke: ${term-stroke}
+      border-radius: 999
+      bold: true
+    }
+  }
+}
+
+wave: "execute wave or\ncorrection round returns" {class: [n; step]}
+mg: "1. machine gate\nparse, typecheck, lint, tests" {class: [n; gate]}
+diff: "2. read summary + real diff" {class: [n; step]}
+ac: "3. coordinator runs each AC's command" {class: [n; step]}
+hs: "High-stakes?" {class: [n; decision]}
+ext: "4. external detector (-e)" {class: [n; opt]}
+fable: "Fable fallback pass" {class: [n; opt]}
+green: "every AC green?\nnon prouvé = not green" {class: [n; decision]}
+next: "next step" {class: [n; term]}
+corr: "5. CORRECTIONS list\nfile: problem → expected fix" {class: [n; step]}
+budget: "correction-budget hook\nround left? max 2" {class: [n; decision]}
+rebrief: "re-brief an opus implementer\nTTW-CORRECTION-ROUND: run-id" {class: [n; step]}
+grant: "user types\nttw: +1 tour?" {class: [n; decision]}
+stop: "stop: deliver residuals\n+ failing output" {class: [n; term]}
+
+wave -> mg
+mg -> diff
+diff -> ac
+ac -> hs
+hs -> ext: "yes"
+ext -> fable: "no usable verdict"
+ext -> green
+fable -> green
+hs -> green: "no"
+green -> next: "yes"
+green -> corr: "no"
+corr -> budget
+budget -> rebrief: "yes"
+wave <- rebrief
+budget -> grant: "spent"
+grant -> rebrief: "yes, one more round"
+grant -> stop: "no"
+
+(** -> **)[*]: {
+  style: {
+    stroke: ${edge}
+    stroke-width: 2
+    font-size: 13
+    font-color: ${muted}
+    italic: false
+  }
+}

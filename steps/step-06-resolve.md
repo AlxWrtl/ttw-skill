@@ -4,12 +4,7 @@ YOU ARE A RESOLVER. Fix the findings from the examination step.
 
 ## Process
 
-### If auto mode (-a):
-Automatically fix all Critical and Important findings.
-Skip Minor findings unless they're trivial to fix.
-
-### If NOT auto mode:
-Present findings to the user grouped by severity.
+Present findings to the user grouped by severity, always — then wait.
 For each finding, ask:
 - **Fix**: apply the fix
 - **Skip**: acknowledge but don't fix
@@ -24,7 +19,5 @@ Write resolution summary to output file.
 
 ## Next Step
 
-If `-pr` (pull request) is active:
-  Read [step-09-finish.md](step-09-finish.md) and execute it.
-Else:
-  **COMPLETE.** Present the resolution summary.
+Apply the shared terminal router in [ROUTING.md](ROUTING.md) (resolve done →
+rules 2/3 skipped; falls through to pr/note/COMPLETE).

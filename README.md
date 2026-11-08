@@ -1,93 +1,109 @@
-# APEX Skill for Claude Code
+# TTW — tiered implementation workflow for Claude Code
 
-A structured, multi-step implementation methodology for [Claude Code](https://docs.anthropic.com/en/docs/claude-code).
+TTW is a Claude Code skill that routes each task to a tier sized to its risk.
+`SKILL.md` is a small router: it decides the tier, then tells the agent which
+step files under `steps/` to read. Steps are loaded progressively, per tier,
+so a typo fix never pays for the full high-stakes protocol.
 
-APEX breaks complex tasks into progressive steps with quality gates, keeping instructions fresh in context at each phase.
+## Tiers
 
-## Pipeline
-
-```
-Init → Analyze → Plan → Execute → Validate → [Tests] → [Examine] → [Resolve] → [Finish]
- 00      01       02      03        04         07         05          06          09
-```
+| Mode | Default flags | When | Read |
+|------|---------------|------|------|
+| Direct | `-pr` | ≤ 4 files, ≤ 30 changed lines, no sensitive surface, not a bug | `steps/DIRECT.md` + `steps/COMMANDS.md` |
+| Diagnosis | `-f -x -pr -o -n` | bug / error / crash / broken: reproduce first, debugger agent implements | as Standard |
+| Standard / complex | `-t -f -pr -o -n` | everything else that changes files | `steps/step-00-init.md`, `steps/ORCHESTRATION.md`, `steps/ROUTING.md`, `steps/COMMANDS.md`, then steps as routed |
+| High-stakes | `-t -f -x -pr -o -n -e` | the diff touches a sensitive surface | Standard list + `steps/HIGH-STAKES.md` |
+| Pure research | none | zero file change | none — answer directly; no branch, no PR |
 
 ## Flags
 
-| Enable | Disable | Description |
-|--------|---------|-------------|
-| `-a` | `-A` | Auto — skip confirmations |
-| `-x` | `-X` | Examine — adversarial code review |
-| `-s` | `-S` | Save — persist outputs to files |
-| `-t` | `-T` | Test — create and run tests |
-| `-e` | `-E` | Economy — no subagents, direct tools only |
-| `-b` | `-B` | Branch — create git branch |
-| `-pr` | `-PR` | Pull request — commit + PR (implies `-b`) |
-| `-k` | `-K` | Tasks — task breakdown with dependency graph |
-| `-m` | `-M` | Teams — parallel agent execution (implies `-k`) |
-| `-v` | `-V` | Verify — research plan online before executing |
-| `-i` | | Interactive — configure flags via menu |
-| `-r` | | Resume — continue previous task |
+Lowercase enables, uppercase disables.
+
+| Flag | Disable | Description |
+|------|---------|-------------|
+| -q | -Q | Clarify — detected ambiguities become targeted questions (3 max) before planning |
+| -x | -X | Examine — adversarial review, checklist-driven |
+| -t | -T | Test — create + run tests after implementation |
+| -f | -F | Test-first — a separate agent writes failing tests from the ACs before execute; read-only for the implementer |
+| -2 | | Divergence — second independent implementation of the core logic, behavioral diff; high-stakes logic only |
+| -p | -P | Premises — force/forbid the premises pass (runs only when -p is typed) |
+| -e | -E | External verify — one cross-vendor read-only pass over the same diff |
+| -pr | -PR | PR — commit + PR |
+| -k | -K | Tasks — dependency breakdown |
+| -v | -V | Verify — research the plan online |
+| -o | -O | Obsidian — load vault context |
+| -n | -N | Note — session note at end |
+
+See `SKILL.md` for the authoritative tables.
 
 ## Usage
 
 ```
-/apex add feature                    # Basic
-/apex -a -s implement auth           # Autonomous + save
-/apex -a -x -s fix bug              # Full autonomous with review
-/apex -a -t -pr add endpoint        # Auto + tests + PR
-/apex -e simple fix                  # Economy mode (save tokens)
-/apex -a -x -t -pr full feature    # Everything enabled
+/ttw fix typo in README        # Direct
+/ttw -t -pr add endpoint       # Standard + tests + PR
+/ttw -q -x migrate schema      # Clarify first, then adversarial review
+/ttw -e refactor auth guard    # + one cross-vendor read-only verify pass
 ```
 
-## Installation
+## Install
 
-Copy the skill into your Claude Code skills directory:
-
-```bash
-# Clone
-git clone https://github.com/AlxWrtl/apex-skill.git
-
-# Copy to Claude Code skills
-cp -r apex-skill ~/.claude/skills/apex
+```
+git clone https://github.com/AlxWrtl/ttw-skill.git ~/.claude/skills/ttw
 ```
 
-Or symlink it:
+Or clone anywhere and symlink the folder to `~/.claude/skills/ttw`.
 
-```bash
-git clone https://github.com/AlxWrtl/apex-skill.git ~/apex-skill
-ln -s ~/apex-skill ~/.claude/skills/apex
-```
+For `-o` / `-n`, set the placeholders in `steps/step-01b-obsidian-context.md`
+and `steps/step-09b-obsidian-note.md`:
+
+- `{vault}` — your Obsidian vault root
+- `{graph-vault}` — the graphify output root
 
 ## Structure
 
 ```
-SKILL.md                    # Skill entry point (read by Claude Code)
-eval-suite.json             # Evaluation test cases
-steps/
-  step-00-init.md           # Initialize: parse flags, check git, setup
-  step-00b-interactive.md   # Interactive flag configuration
-  step-00b-branch.md        # Git branch creation
-  step-00b-economy.md       # Economy mode rules
-  step-00b-save.md          # Save mode output setup
-  step-01-analyze.md        # Explore codebase, evaluate complexity
-  step-02-plan.md           # Create implementation plan + acceptance criteria
-  step-02b-tasks.md         # Task decomposition with dependency graph
-  step-02c-verify.md        # Research/verify plan against current docs
-  step-03-execute.md        # Implement changes task-by-task
-  step-03-execute-teams.md  # Parallel agent team execution
-  step-04-validate.md       # Verify acceptance criteria + build checks
-  step-05-examine.md        # Adversarial code review (security, logic, clean code)
-  step-06-resolve.md        # Fix examination findings
-  step-07-tests.md          # Create tests following project patterns
-  step-08-run-tests.md      # Run tests with retry loop (max 10)
-  step-09-finish.md         # Git commit, push, create PR
+.
+├── README.md
+├── SKILL.md              # router: tier gate, flags, contract
+├── eval-suite.json
+└── steps/
+    ├── COMMANDS.md
+    ├── DIRECT.md
+    ├── HIGH-STAKES.md
+    ├── ORCHESTRATION.md
+    ├── ROUTING.md
+    ├── step-00-init.md
+    ├── step-00b-save.md
+    ├── step-01-analyze.md
+    ├── step-01b-obsidian-context.md
+    ├── step-02-plan.md
+    ├── step-02b-tasks.md
+    ├── step-02c-verify.md
+    ├── step-03-execute.md
+    ├── step-04-validate.md
+    ├── step-05-examine.md
+    ├── step-06-resolve.md
+    ├── step-07-tests.md
+    ├── step-08-run-tests.md
+    ├── step-09-finish.md
+    └── step-09b-obsidian-note.md
 ```
 
-## How It Works
+## Companion tools
 
-APEX uses **progressive context loading**: instead of dumping all instructions at once, each step is read and executed independently. This keeps the relevant instructions fresh in Claude's context window, improving attention and accuracy on complex tasks.
+The steps call tools this repo does not ship:
 
-Steps are connected via relative links — each step tells Claude which file to read next based on active flags and outcomes.
+- `ttw-tier` — re-checks the tier on the real diff
+- `ttw-board` — run board reading the Progress table
+- `ttw-verify-external` — cross-vendor (Codex) verify for `-e`
+- hooks — `require-ttw` gate, `ttw-flags`, correction-budget / correction-grant,
+  research-model, `ttw-metrics-probe`
+- `graphify` and `enquire` MCP servers — vault context for `-o`
+- `claude-dispatch`, `jev-locate`, `libdocs`
+
+They live in the author's private configuration, which is not public.
+Without them, adapt or skip the steps that call them; `SKILL.md` asks the
+agent to warn and fall back on a missing prerequisite, not to fail silently.
 
 ## License
 

@@ -1,0 +1,167 @@
+# TTW run overview: tier gate, Direct lane, phase pipeline.
+...@palette
+
+direction: down
+style.fill: transparent
+
+classes: {
+  n: {
+    style: {
+      font-size: 15
+      font-color: ${text}
+      stroke-width: 2
+      border-radius: 10
+      bold: false
+    }
+  }
+  gate: {
+    style: {
+      fill: ${gate-fill}
+      stroke: ${gate-stroke}
+    }
+  }
+  decision: {
+    shape: hexagon
+    style: {
+      fill: ${gate-fill}
+      stroke: ${gate-stroke}
+      bold: true
+    }
+  }
+  pill: {
+    style: {
+      border-radius: 999
+      bold: true
+    }
+  }
+  step: {
+    style: {
+      fill: ${step-fill}
+      stroke: ${step-stroke}
+    }
+  }
+  opt: {
+    style: {
+      fill: ${opt-fill}
+      stroke: ${opt-stroke}
+      stroke-dash: 4
+    }
+  }
+  term: {
+    style: {
+      fill: ${term-fill}
+      stroke: ${term-stroke}
+      border-radius: 999
+      bold: true
+    }
+  }
+  lane: {
+    label.near: bottom-left
+    style: {
+      fill: ${lane-fill}
+      stroke: ${lane-stroke}
+      font-size: 16
+      font-color: ${muted}
+      stroke-width: 1
+      border-radius: 16
+    }
+  }
+}
+
+gate: "Task → tier gate\nFiles: + Est-lines:" {class: [n; gate]}
+tier: "Tier?\nfirst match wins" {class: [n; decision]}
+research: "Pure research\nanswer, no branch, no PR" {class: [n; term]}
+diag: Diagnosis {class: [n; gate; pill]}
+high: High-stakes {class: [n; gate; pill]}
+std: Standard {class: [n; gate; pill]}
+
+direct: "  Direct — coordinator inline, no subagent" {
+  class: lane
+  d1: "branch + 00-context.md" {class: [n; step]}
+  d2: "baseline gate" {class: [n; gate]}
+  d3: "red test first" {class: [n; step]}
+  d4: "edit inline, Files: only" {class: [n; step]}
+  d5: "machine gate" {class: [n; gate]}
+  d6: "ttw-tier --base {trunk}\ntier=direct and gate green?" {class: [n; decision]}
+  d7: "self-check: each AC vs git diff" {class: [n; step]}
+  d8: "ship per -pr" {class: [n; term]}
+  esc: "escalate\nbranch + diff kept" {class: [n; step]}
+
+  d1 -> d2
+  d2 -> d3
+  d3 -> d4
+  d4 -> d5
+  d5 -> d6
+  d6 -> d7: "yes"
+  d7 -> d8: "all met"
+  d4 -> esc: "path outside Files:"
+  d6 -> esc: "no"
+  d7 -> esc: "AC not met"
+}
+
+pipe: "  Standard / Diagnosis / High-stakes — fresh subagent per phase" {
+  class: lane
+  init: "00-init + 00b-save\nbaseline gate" {class: [n; step]}
+  ana: "01-analyze" {class: [n; step]}
+  obs: "01b-obsidian" {class: [n; opt]}
+  plan: "02-plan\n+ 02b-tasks under -k" {class: [n; step]}
+  v2c: "02c-verify" {class: [n; opt]}
+  tf: "test-author\nfailing tests" {class: [n; opt]}
+  exe: "03-execute\ntyped implementer\n(debugger in Diagnosis)" {class: [n; step]}
+  val: "04-validate" {class: [n; step]}
+  rt: "terminal router\nfirst match wins" {class: [n; decision]}
+  tst: "07-tests → 08-run-tests" {class: [n; opt]}
+  exm: "05-examine" {class: [n; opt]}
+  res: "06-resolve" {class: [n; step]}
+  fin: "09-finish\ncommit, PR, merge" {class: [n; opt]}
+  note: "09b-obsidian-note" {class: [n; opt]}
+  done: "COMPLETE\nsummary" {class: [n; term]}
+
+  init -> ana: "Diagnosis, or files unknown"
+  init -> obs: "files known, -o"
+  init -> plan: "files known"
+  ana -> obs: "-o"
+  ana -> plan
+  obs -> plan
+  plan -> v2c: "-v"
+  plan -> tf: "-f"
+  plan -> exe
+  v2c -> tf: "-f"
+  v2c -> exe
+  tf -> exe
+  exe -> val: "verify loop"
+  val -> rt
+  rt -> tst: "-t, from 04 only"
+  tst -> rt
+  rt -> exm: "-x, not yet run"
+  exm -> rt
+  rt -> res: "Critical / Important"
+  res -> rt
+  rt -> fin: "-pr"
+  rt -> note: "-n"
+  rt -> done: "else"
+  fin -> note: "-n"
+  fin -> done
+  note -> done
+}
+
+gate -> tier
+tier -> research: "zero file change"
+tier -> diag: "bug"
+tier -> high: "sensitive surface"
+tier -> direct.d1: "≤ 4 files, ≤ 30 lines"
+tier -> std: "everything else"
+diag -> pipe.init
+high -> pipe.init
+std -> pipe.init
+direct.esc -> pipe.plan: "Standard or High-stakes flags"
+
+(** -> **)[*]: {
+  style: {
+    stroke: ${edge}
+    stroke-width: 2
+    font-size: 13
+    font-color: ${muted}
+    italic: false
+  }
+}

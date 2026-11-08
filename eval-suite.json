@@ -1,11 +1,13 @@
 {
   "triggers": [
-    {"prompt": "implement this using apex methodology", "should_trigger": true},
-    {"prompt": "use the apex framework for this feature", "should_trigger": true},
-    {"prompt": "/apex add authentication to the app", "should_trigger": true},
-    {"prompt": "run apex with -a flag to auto-implement the payment module", "should_trigger": true},
-    {"prompt": "apex -s to save the output for the new dashboard feature", "should_trigger": true},
-    {"prompt": "fix this bug in the login form", "should_trigger": false},
+    {"prompt": "implement this using ttw methodology", "should_trigger": true},
+    {"prompt": "use the ttw framework for this feature", "should_trigger": true},
+    {"prompt": "/ttw add authentication to the app", "should_trigger": true},
+    {"prompt": "run ttw with -q to clarify before planning the payment module", "should_trigger": true},
+    {"prompt": "ttw -k -v for the new dashboard feature", "should_trigger": true},
+    {"prompt": "ttw -x -t -pr build the export endpoint", "should_trigger": true},
+    {"prompt": "fix this bug in the login form", "should_trigger": true},
+    {"prompt": "rename a single variable in utils.ts", "should_trigger": true},
     {"prompt": "what does this function do?", "should_trigger": false},
     {"prompt": "run the tests and tell me what fails", "should_trigger": false},
     {"prompt": "review this PR for code quality", "should_trigger": false},
@@ -14,111 +16,209 @@
   "test_cases": [
     {
       "name": "step-00-initialize",
-      "prompt": "Start apex for adding a new user settings page. We are at step 00.",
+      "prompt": "Start ttw for adding a new user settings page. We are at step 00.",
       "assertions": [
         {"type": "contains", "value": "git status", "description": "Step 00 must check git status before starting"},
-        {"type": "contains", "value": "output", "description": "Step 00 must set up output directory"},
-        {"type": "contains", "value": "context", "description": "Step 00 must capture task context"},
-        {"type": "excludes", "value": "implement", "description": "Step 00 must not start implementing — only initialize"},
+        {"type": "contains", "value": "Flags", "description": "Step 00 must parse and record active flags"},
+        {"type": "pattern", "value": "[Bb]aseline", "description": "Step 00 records the project gate before the first edit"},
+        {"type": "excludes", "value": "I wrote the", "description": "Step 00 initializes; it does not start writing code"},
         {"type": "pattern", "value": "00|[Ii]nitializ", "description": "Must explicitly reference step 00 initialization"}
       ]
     },
     {
-      "name": "full-9-step-execution",
-      "prompt": "Execute all apex steps (-a flag) for adding email notifications to the app. Run every step from 00 to 09.",
+      "name": "mode-gate-diagnosis",
+      "prompt": "ttw the login button is broken and throws an error on click",
+      "assertions": [
+        {"type": "pattern", "value": "[Gg]ate|[Dd]iagnos", "description": "Mode Gate must pick the diagnosis mode"},
+        {"type": "pattern", "value": "[Rr]eproduc", "description": "Diagnosis analyze reproduces the error before planning a fix"},
+        {"type": "pattern", "value": "debugger agent", "description": "Execute phase spawns the debugger agent as implementer"},
+        {"type": "pattern", "value": "[Pp]ull request|gh pr create", "description": "Diagnosis ships its fix: -pr is a default, the run ends on a PR"}
+      ]
+    },
+    {
+      "name": "step-01-conflict-analysis",
+      "prompt": "ttw analyze adding a direct DB call in the controller for a new report feature. We are at step 01.",
+      "assertions": [
+        {"type": "pattern", "value": "[Cc]onflict|[Cc]onstraint", "description": "Step 01 must produce the Conflicts & Constraints section"},
+        {"type": "pattern", "value": "[Dd]iverg|[Pp]attern", "description": "Must flag where the task diverges from existing patterns"},
+        {"type": "pattern", "value": "[Dd]ecision|[Ss]cope", "description": "Must surface decisions needed and out-of-scope temptations"},
+        {"type": "excludes", "value": "raw file dump", "description": "Subagents must return bounded summaries, not raw dumps"}
+      ]
+    },
+    {
+      "name": "full-execution-flow",
+      "prompt": "Execute all ttw steps for adding email notifications. Run every step.",
       "assertions": [
         {"type": "contains", "value": "00", "description": "Must execute step 00 Initialize"},
         {"type": "contains", "value": "01", "description": "Must execute step 01 Analyze"},
-        {"type": "contains", "value": "04", "description": "Must execute step 04 Execute"},
-        {"type": "contains", "value": "09", "description": "Must execute step 09 Finish"},
+        {"type": "contains", "value": "03", "description": "Must execute step 03 Execute"},
         {"type": "contains", "value": "Finish", "description": "Must reach the Finish step"},
-        {"type": "pattern", "value": "[Aa]nalyze|[Pp]lan|[Ee]xecute|[Tt]est|[Dd]ocument", "description": "Must name each major phase in sequence"}
+        {"type": "pattern", "value": "[Aa]nalyze|[Pp]lan|[Ee]xecute|[Vv]alidate", "description": "Must name each major phase in sequence"}
       ]
     },
     {
-      "name": "apex-auto-flag",
-      "prompt": "apex -a implement the CSV export feature",
+      "name": "ttw-clarify-flag",
+      "prompt": "ttw -q implement the CSV export feature",
       "assertions": [
-        {"type": "contains", "value": "auto", "description": "Must acknowledge -a flag enables auto mode"},
-        {"type": "pattern", "value": "step|[Ss]tep\\s*0[0-9]", "description": "Must reference step numbers during execution"},
-        {"type": "excludes", "value": "manual approval", "description": "Auto mode must not pause for manual approval at each step"},
-        {"type": "pattern", "value": "[Ii]mplement|[Ee]xecute|[Pp]lan", "description": "Must proceed through plan and implement phases"}
+        {"type": "pattern", "value": "[Cc]larif|[Aa]mbigu|AskUserQuestion", "description": "Must acknowledge -q turns ambiguities into questions"},
+        {"type": "pattern", "value": "[Ss]tep\\s*0[0-9]", "description": "Must reference step numbers during execution"},
+        {"type": "pattern", "value": "3|three", "description": "Must cap the clarification round at 3 questions"},
+        {"type": "excludes", "value": "after the plan", "description": "Questions are asked before planning, never after"}
       ]
     },
     {
-      "name": "apex-examine-flag",
-      "prompt": "apex -e review the current implementation for security issues",
+      "name": "ttw-examine-flag",
+      "prompt": "ttw -x build a token refresh endpoint then review it for security issues",
       "assertions": [
-        {"type": "contains", "value": "06", "description": "Examine flag must jump to step 06"},
-        {"type": "pattern", "value": "[Ee]xamine|[Ss]ecurity|[Pp]erformance|[Mm]aintainab", "description": "Must focus on security/performance/maintainability in step 06"},
-        {"type": "excludes", "value": "step 00", "description": "Examine flag must not restart from step 00"}
+        {"type": "contains", "value": "05", "description": "Examine flag (-x) routes to step 05, not 06"},
+        {"type": "pattern", "value": "[Ee]xamine|[Ss]ecurity|[Ll]ogic|[Cc]lean", "description": "Must run the three adversarial review focuses in step 05"},
+        {"type": "excludes", "value": "step 00", "description": "Examine must not restart from step 00"}
+      ]
+    },
+    {
+      "name": "plan-premises-sourced",
+      "prompt": "ttw add a retry helper around the existing fetch wrapper. We are at step 02.",
+      "assertions": [
+        {"type": "pattern", "value": "file:line", "description": "A claim about the codebase carries its file:line, never recollection"},
+        {"type": "pattern", "value": "[Pp]remise", "description": "The plan states its premises before any task"},
+        {"type": "excludes", "value": "not explicitly requested", "description": "The planner narrows the solution, never the request"}
+      ]
+    },
+    {
+      "name": "wave-file-disjoint",
+      "prompt": "ttw -k build the export feature: types, endpoint, UI form and route wiring",
+      "assertions": [
+        {"type": "pattern", "value": "[Ww]ave", "description": "-k must group tasks into waves"},
+        {"type": "pattern", "value": "Files:", "description": "Each task must carry its Files: list"},
+        {"type": "pattern", "value": "disjoint|[Pp]airwise", "description": "A wave must be file-disjoint, checked pairwise"},
+        {"type": "excludes", "value": "combined file list", "description": "A deduplicated list hides the repeat being looked for"}
+      ]
+    },
+    {
+      "name": "per-step-effort",
+      "prompt": "Which ttw steps use high reasoning effort and which use low?",
+      "assertions": [
+        {"type": "pattern", "value": "[Hh]igh.*0?1|[Aa]nalyze.*high", "description": "Analysis/plan/examine steps must use high effort"},
+        {"type": "pattern", "value": "[Ll]ow.*03|[Mm]echanical", "description": "Mechanical steps (execute/branch/finish) must use low effort"},
+        {"type": "excludes", "value": "effort: high", "description": "Effort must be per-step, not a single global frontmatter value"}
       ]
     }
   ],
   "edge_cases": [
     {
-      "name": "missing-project-claude-md",
+      "name": "minimal-task-direct",
+      "category": "minimal",
+      "prompt": "ttw add a missing semicolon in index.ts",
+      "expected_behavior": "TTW runs at the Direct tier: inline edit, machine gate, then ttw-tier re-checks the real diff; no implementer is spawned.",
+      "assertions": [
+        {"type": "pattern", "value": "Direct", "description": "The tier gate picks Direct for a one-line, non-sensitive diff"},
+        {"type": "pattern", "value": "gate|ttw-tier", "description": "Direct still runs the machine gate and the ttw-tier real-diff re-check"},
+        {"type": "excludes", "value": "overkill", "description": "Must not decline the task as too big a hammer"},
+        {"type": "excludes", "value": "too small", "description": "Must not decline the task for its size"},
+        {"type": "excludes", "value": "quick-fix", "description": "Must not reroute to quick-fix — excludes is a literal substring test, so each phrasing needs its own entry"}
+      ]
+    },
+    {
+      "name": "notification-matcher-direct",
+      "category": "mode",
+      "prompt": "ajoute un matcher au hook Notification dans settings.nix",
+      "expected_behavior": "The tier gate picks Direct: adding a notification hook matcher is a settings value, not a sensitive surface; the words hook and settings in the brief do not make it high-stakes.",
+      "assertions": [
+        {"type": "pattern", "value": "Direct", "description": "Tier is decided on the diff, not on the brief's words"},
+        {"type": "pattern", "value": "gate|ttw-tier", "description": "Direct still runs the machine gate and the ttw-tier re-check"},
+        {"type": "excludes", "value": "tier=high", "description": "A notification matcher is not a sensitive surface"}
+      ]
+    },
+    {
+      "name": "permissions-deny-high-stakes",
+      "category": "mode",
+      "prompt": "ajoute Bash(rm *) à permissions.deny dans settings.nix",
+      "expected_behavior": "The tier gate picks High-stakes: the diff edits a deny permission rule, a sensitive surface, however small it is.",
+      "assertions": [
+        {"type": "pattern", "value": "High-stakes", "description": "A deny rule edit is a sensitive surface, so High-stakes wins over Direct"},
+        {"type": "pattern", "value": "HIGH-STAKES|-e|[Ee]xternal", "description": "High-stakes adds the external read-only detector"},
+        {"type": "excludes", "value": "Tier: Direct", "description": "Size never downgrades a sensitive surface to Direct"}
+      ]
+    },
+    {
+      "name": "diagnosis-task",
+      "category": "mode",
+      "prompt": "ttw why is the app crashing on startup?",
+      "expected_behavior": "The tier gate selects Diagnosis and runs the chain inside TTW; the debugger agent implements from the execute phase.",
+      "assertions": [
+        {"type": "pattern", "value": "[Mm]ode [Gg]ate|[Tt]ier [Gg]ate", "description": "Must name the gate that selects the tier"},
+        {"type": "pattern", "value": "debugger agent|execute phase", "description": "The chain runs inside TTW, implemented by the debugger agent"},
+        {"type": "excludes", "value": "instead of ttw", "description": "Nothing runs in place of the chain"}
+      ]
+    },
+    {
+      "name": "missing-conventions",
       "category": "missing",
-      "prompt": "apex -a implement OAuth but this project has no CLAUDE.md and no documented conventions",
-      "expected_behavior": "Should warn about missing CLAUDE.md but proceed with explicit documentation of assumptions in step 00",
+      "prompt": "ttw implement OAuth but this project has no documented conventions",
+      "expected_behavior": "Analyze step documents the absence of conventions as a risk in Conflicts & Constraints and proceeds with explicit assumptions.",
       "assertions": [
-        {"type": "contains", "value": "CLAUDE.md", "description": "Must reference missing CLAUDE.md as a risk factor"},
-        {"type": "pattern", "value": "[Pp]roceed|[Ww]arn|[Nn]ot found|[Mm]issing", "description": "Must warn about missing conventions context but not block"}
+        {"type": "pattern", "value": "[Cc]onvention|[Aa]ssumption|[Rr]isk", "description": "Must document missing conventions as a constraint/risk"},
+        {"type": "pattern", "value": "[Pp]roceed|[Ww]arn", "description": "Must proceed with stated assumptions, not block"}
       ]
     },
     {
-      "name": "conflicting-steps",
+      "name": "task-conflicts-with-pattern",
       "category": "invalid",
-      "prompt": "Start apex at step 04-Execute but we have not done step 02-Plan yet",
-      "expected_behavior": "Should warn about skipping planning steps and recommend going back to step 02 first",
+      "prompt": "ttw add a feature that bypasses the existing repository layer and queries the DB directly",
+      "expected_behavior": "Step 01 Conflicts & Constraints flags the divergence from the repository pattern and surfaces it as a decision before planning.",
       "assertions": [
-        {"type": "pattern", "value": "[Ww]arn|[Ss]kip|[Dd]epend|[Rr]ecommend|[Ss]equence", "description": "Must warn about dependency violation and recommend sequential execution"}
-      ]
-    },
-    {
-      "name": "skip-steps-request",
-      "category": "invalid",
-      "prompt": "apex: skip steps 01 through 04 and go straight to step 05-Test",
-      "expected_behavior": "Should warn that testing without analysis and planning creates risk of untested code paths",
-      "assertions": [
-        {"type": "pattern", "value": "[Ww]arn|[Rr]isk|[Ss]kip|[Nn]ot recommend|[Cc]aution", "description": "Must warn about the risk of skipping analysis and planning steps"}
+        {"type": "pattern", "value": "[Cc]onflict|[Dd]iverg|[Pp]attern", "description": "Must flag the divergence from the established pattern"},
+        {"type": "pattern", "value": "[Dd]ecision|[Ss]urface|[Bb]efore planning", "description": "Must surface it as a decision before planning"}
       ]
     },
     {
       "name": "huge-codebase",
       "category": "scale",
-      "prompt": "apex -a refactor the entire monorepo — it has 500+ files across 12 services",
-      "expected_behavior": "Should recommend scoping the work into sub-tasks or milestones before running apex on each",
+      "prompt": "ttw refactor the entire monorepo — 500+ files across 12 services",
+      "expected_behavior": "TTW runs; the tier gate picks the depth. No pre-TTW triage exists — the plan's Tasks section carries the breakdown, and -k groups it into file-disjoint waves.",
       "assertions": [
-        {"type": "pattern", "value": "[Ss]cope|[Ss]plit|[Mm]ilestone|[Pp]hase|[Ss]ub-task|[Cc]larif", "description": "Must recommend breaking 500+ file refactor into smaller milestones"}
+        {"type": "pattern", "value": "[Mm]ode [Gg]ate|[Tt]ier [Gg]ate|[Hh]igh-stakes|Standard", "description": "Depth is chosen by the tier gate, not by declining the task"},
+        {"type": "pattern", "value": "[Ww]ave|[Tt]ask|-k", "description": "The breakdown lives in the plan's tasks, not in a pre-TTW step"},
+        {"type": "excludes", "value": "before running ttw", "description": "Nothing runs before TTW — the gate picks depth, never whether"}
       ]
     },
     {
-      "name": "no-tests-available",
+      "name": "skip-planning-request",
+      "category": "invalid",
+      "prompt": "ttw skip analyze and plan, go straight to execute",
+      "expected_behavior": "Warns that executing without analysis/planning risks untested, convention-violating code and recommends the linear spine.",
+      "assertions": [
+        {"type": "pattern", "value": "[Ww]arn|[Rr]isk|[Ss]kip|[Ss]equen|[Ss]pine", "description": "Must warn about skipping analysis/planning"}
+      ]
+    },
+    {
+      "name": "baseline-already-red",
       "category": "missing",
-      "prompt": "apex step 05-Test but there is no test framework configured in this project",
-      "expected_behavior": "Should warn about missing test framework and recommend setting one up or falling back to manual verification",
+      "prompt": "ttw add a health endpoint, but the test suite is already failing before I start",
+      "expected_behavior": "step-00 records the red baseline and names the failing check; the run proceeds, and at validate only that named failure may be attributed to the baseline.",
+      "assertions": [
+        {"type": "pattern", "value": "[Bb]aseline", "description": "Must record a baseline at init"},
+        {"type": "pattern", "value": "[Bb]efore the first edit", "description": "The gate is read before the first edit, not after"},
+        {"type": "excludes", "value": "pre-existing", "description": "Only the NAMED baseline failure may be excused at validate; a blanket 'pre-existing' is the failure mode"}
+      ]
+    },
+    {
+      "name": "no-test-framework",
+      "category": "missing",
+      "prompt": "ttw -t implement a feature but there is no test framework configured",
+      "expected_behavior": "Warns about the missing framework and recommends setup or manual verification fallback.",
       "assertions": [
         {"type": "pattern", "value": "[Nn]o test|[Mm]anual|[Ss]etup|[Ff]ramework|[Ww]arn", "description": "Must warn about missing test framework and propose alternatives"}
       ]
     },
     {
-      "name": "single-step task — apex overkill",
-      "category": "minimal",
-      "prompt": "apex -a rename the variable `x` to `userId` in one function in utils.ts",
-      "expected_behavior": "Should flag that apex is overkill for a single-variable rename and recommend using the editor directly or a quick-fix agent",
-      "assertions": [
-        {"type": "pattern", "value": "[Oo]verkill|[Ss]imple|[Qq]uick.fix|[Ss]ingle file|[Ss]mall change", "description": "Must flag that apex is not appropriate for a one-line rename"},
-        {"type": "pattern", "value": "[Rr]ecommend|[Ss]uggest|[Ee]ditor|[Dd]irect", "description": "Must recommend a lighter-weight approach"}
-      ]
-    },
-    {
       "name": "malformed-flag",
       "category": "malformed",
-      "prompt": "apex --unknownflag implement the feature",
-      "expected_behavior": "Should reject the unknown flag and print the valid flags: -a, -s, -e, -t, -h",
+      "prompt": "ttw --unknownflag implement the feature",
+      "expected_behavior": "Rejects the unknown flag and lists the valid flags.",
       "assertions": [
-        {"type": "pattern", "value": "[Uu]nknown|[Ii]nvalid|[Hh]elp|[Ff]lag|usage", "description": "Must reject unknown flag and show valid flags"}
+        {"type": "pattern", "value": "[Uu]nknown|[Ii]nvalid|[Ff]lag|[Uu]sage", "description": "Must reject the unknown flag"},
+        {"type": "pattern", "value": "-q|-x|-t|-pr", "description": "Must list valid flags"}
       ]
     }
   ]

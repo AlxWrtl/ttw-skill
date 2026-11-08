@@ -20,8 +20,7 @@ Attempt 1/10:
 - Ask for guidance
 - Do NOT loop forever
 
-## Next Step — Conditional
+## Next Step
 
-1. If `-x` (examine) is active: Read [step-05-examine.md](step-05-examine.md) and execute it.
-2. Else if `-pr` (pull request) is active: Read [step-09-finish.md](step-09-finish.md) and execute it.
-3. Else: **COMPLETE.** Present test results summary.
+Apply the shared terminal router in [ROUTING.md](ROUTING.md), skipping rule 1
+(`-t` already consumed).

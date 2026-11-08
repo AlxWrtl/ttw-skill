@@ -1,0 +1,136 @@
+# TTW at a glance: one question picks the lane, then a short path to a merged PR.
+...@palette
+
+direction: down
+style.fill: transparent
+
+classes: {
+  box: {
+    style: {
+      font-size: 20
+      font-color: ${text}
+      stroke-width: 2
+      border-radius: 12
+      bold: true
+    }
+  }
+  sub: {
+    shape: text
+    style: {
+      font-size: 16
+      font-color: ${muted}
+      bold: false
+    }
+  }
+  decision: {
+    shape: hexagon
+    style: {
+      fill: ${gate-fill}
+      stroke: ${gate-stroke}
+    }
+  }
+  step: {
+    style: {
+      fill: ${step-fill}
+      stroke: ${step-stroke}
+    }
+  }
+  start: {
+    style: {
+      fill: ${lane-fill}
+      stroke: ${lane-stroke}
+      border-radius: 999
+    }
+  }
+  end: {
+    style: {
+      fill: ${term-fill}
+      stroke: ${term-stroke}
+      border-radius: 999
+    }
+  }
+  lane: {
+    label.near: top-left
+    style: {
+      fill: ${lane-fill}
+      stroke: ${lane-stroke}
+      font-size: 18
+      font-color: ${muted}
+      stroke-width: 1
+      border-radius: 16
+      bold: true
+    }
+  }
+  why: {
+    style: {
+      font-size: 16
+      font-color: ${muted}
+      stroke: ${edge}
+      stroke-width: 2
+    }
+  }
+}
+
+task: "Your task" {class: [box; start]}
+size: "How big, how risky\nis the change?" {class: [box; decision]}
+answer: "Just answer" {class: [box; end]}
+
+quick: "Quick lane: fix it directly" {
+  class: [box; step]
+  s: "failing test first\n→ edit → checks" {class: sub}
+}
+
+# The full lane reads as a snake: left to right, then down and back left.
+# The grid fills column by column, hence the declaration order.
+full: "Full lane" {
+  class: lane
+  grid-columns: 3
+  horizontal-gap: 56
+  vertical-gap: 64
+  plan: "Plan" {
+    class: [box; step]
+    s: "goal + how each\nresult is proven" {class: sub}
+  }
+
+  blank: "" {style.opacity: 0}
+
+  tests: "Write failing tests" {
+    class: [box; step]
+    s: "by a separate agent" {class: sub}
+  }
+
+  review: "Extra review" {
+    class: [box; step]
+    s: "tests, code review, second opinion\non bigger or risky work" {class: sub}
+  }
+
+  impl: "Implement" {
+    class: [box; step]
+    s: "fresh agent,\nonly the planned files" {class: sub}
+  }
+
+  verify: "Verify" {
+    class: [box; step]
+    s: "checks + every goal proven\nup to 2 fix rounds" {class: sub}
+  }
+
+  plan -> tests: {class: why}
+  tests -> impl: {class: why}
+  impl <-> verify: "fix" {class: why}
+  verify -> review: {class: why}
+}
+
+pr: "Pull request, merged" {class: [box; end]}
+note: "Session note" {class: [box; end]}
+
+task -> size: {class: why}
+size -> answer: "No file changes" {class: why}
+size -> quick: "Small and safe\n≤ 4 files, ≤ 30 lines" {class: why}
+size -> full: "Bigger, a bug,\nor sensitive" {class: why}
+quick -> full: "too big after all" {
+  class: why
+  style.stroke-dash: 5
+}
+quick -> pr: {class: why}
+full -> pr: {class: why}
+pr -> note: "full lane only" {class: why}

@@ -29,8 +29,9 @@ Root: `{vault}` — your Obsidian vault root (e.g. `~/Vaults/MyVault`); set it o
      missing project note does not make it mute.
      The cwd basename is NOT a reliable key for the graph. A code repo can
      carry a name that exists nowhere as a vault folder while its notes live
-     under another project: measured on a repo whose notes sit under a differently named
-     project folder — this early exit sent the run to step-02, and the graph,
+     under another project: measured on a repo still under a former code
+     name while its notes sat under the renamed project's folder — this
+     early exit sent the run to step-02, and the graph,
      which held the answer, was never asked.
    - 1 match → use it.
    - 2+ matches → use `AskUserQuestion` to let the user pick; do NOT silently pick a "closest match".
@@ -56,6 +57,12 @@ Root: `{vault}` — your Obsidian vault root (e.g. `~/Vaults/MyVault`); set it o
    from the TASK, never from the project name — which the keyword rule in
    (b) already bans — so an undetected project changes nothing about it.
    When there is no project, this step IS the whole vault context.
+
+   ONLY a graph status `absent` or `unavailable` skips the query. "Recency
+   already covers it" is no reason to skip: recency cannot see what it did
+   not surface, which is exactly what this step is for. Record the query
+   on the `- Query:` line of the report; a 01b written without one, and
+   not absent/unavailable, draws a PostToolUse reminder.
 
    a. **Freshness probe** (cheap, no MCP): Bash
       `ls -l {graph-vault}/graphify-out/graph.json` and compare its mtime
@@ -96,12 +103,27 @@ Root: `{vault}` — your Obsidian vault root (e.g. `~/Vaults/MyVault`); set it o
         (~5-7k tokens of context). Accept it, do not try to shrink it.
    c. Optionally, at most TWO `mcp__graphify__get_neighbors` calls on the
       1-2 returned entities most central to the task.
-   d. Keep only what recency did NOT already surface: related notes
+   d. **Cascade, project first.** Each node in the reply carries
+      `src=<Project>/<path>`, relative to `02-Projets`.
+      - Keep the nodes whose `src=` starts with `<Project>/`, the project
+        folder found in step 3.
+      - A node from another project is kept only when an EDGE in the
+        reply links it to a kept node or to a task keyword. Cite its note
+        with the prefix `[autre projet]` and name that edge in the report.
+      - The reply holds no node of the project, or step 3 found no
+        project → use the whole reply. Same for a repo whose notes live
+        under another folder (a former code name, notes under the
+        renamed project).
+      Why: measured 2026-11-11, 27 of 33 graph citations came from the
+      run's own project and 6 from another, 5 of them useful. A project
+      silo would lose those 6; keeping everything lets other projects'
+      nodes take most of the reply's budget.
+   e. Keep only what recency did NOT already surface: related notes
       outside {project note, 3 recent sessions, decisions read}. Read at
       most 3 of them from the vault (Read tool) — the graph is the
       pointer, the note is the truth. Cite them as `[[wikilinks]]` like
       every other note read.
-   e. Any MCP error, timeout, or empty/degraded response → ONE attempt
+   f. Any MCP error, timeout, or empty/degraded response → ONE attempt
       only: set status `unavailable` and continue with recency alone.
       This step NEVER blocks and NEVER fails the run — a missing graph
       degrades to exactly the pre-graphify behavior.
@@ -155,7 +177,10 @@ Produce a compact report:
 - [[02-Projets/{project}/decisions/slug]] — {one-liner}
 
 ### Graph relations (graphify)
+- Query: `{keywords}` (depth 1, budget 1200) — {N nodes, complete | truncated → reformulated}
+  Mandatory unless the status is absent or unavailable.
 - [[02-Projets/{project}/...]] — {relation to the task, per the graph}
+- [autre projet] [[02-Projets/{other}/...]] — {edge that links it}
 - Graph status: fresh | stale ({graph date}) | absent | unavailable
   ALWAYS print this line, including when no project note was found — it is
   the only way to tell "the graph said nothing" from "the graph was skipped".

@@ -30,6 +30,10 @@ with 00-init `running`; then record the following in it:
   use the SAME commands step-04 will run — a gate compared against a
   different gate proves nothing. `pnpm typecheck && pnpm lint`,
   `nix flake check --no-build`, `cargo check`.
+  - **CI parity.** When the repo has `.github/workflows`, also run
+    `ttw-ci-gate --run` and record its PASS/FAIL lines: step-04 compares
+    on their `<file>:<job>` + name key, and a FAIL whose key was PASS or
+    absent here is that run's red.
   - **Already red.** Name the failing check verbatim. The run continues,
     and at validate ONLY that named failure may be attributed to the
     baseline — every other red is this run's.

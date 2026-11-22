@@ -21,19 +21,25 @@ classify it — by capability, not by task: do not special-case nix.
   do not ask again.
   Never hand the user a command to type, never a `! cmd`.
 - **Sandbox-excluded** — `git push`, `git commit`, `git pull`, `git fetch`,
-  `gh`, `codex`, `claude-dispatch` and bare `nix flake check` run OUTSIDE the sandbox only
+  `gh`, `codex`, `ttw-verify-external`, `claude-dispatch` and bare `nix flake check` run OUTSIDE the sandbox only
   when the Bash call is that command alone:
   run them as standalone commands — one per Bash call, from the repo cwd, no `cd … &&`, no
   `git -C`, no `&&` chain, no redirection, heredoc or `$(…)` (multi-line
   text: `git commit -F <file>`, `gh pr create --body-file <file>`). Any of
   those keeps the call sandboxed and it fails. If one fails on sandbox
-  evidence, fix the shape; do not escalate. Long ones run with
+  evidence, fix the shape; do not escalate. `ttw-verify-external` also runs
+  from the project root (its `--acs`/`--out` paths are relative to it);
+  sandboxed it gives no EPERM, it times out. Long ones run with
   `run_in_background`; read the tail of the output file.
 - **Read-only `.git/config`** — inside the sandbox, `.git/config` and
-  `.git/hooks` are read-only in every repo: `git branch -d/-m/-u`,
+  `.git/hooks` are read-only in every repo: `git branch -m/-u`,
   `git checkout -b <x> origin/<y>`, `git remote`, `git config --local`,
   `git init` and `git clone` fail there — run them with
-  dangerouslyDisableSandbox (one retry, permission box).
+  dangerouslyDisableSandbox (one retry, permission box). These pass
+  sandboxed, so keep them in it: `git branch -d/-D` (a "could not lock
+  config file" warning is harmless, the branch is gone) and
+  `git checkout --no-track -b <x> origin/<y>` (`git push -u` sets the
+  upstream later).
 - **Sandbox-blocked** — docker, or any command that just failed with clear
   sandbox evidence (a refused local DB socket, permission denied on allowed
   work, socket/auth failure): retry ONCE with `dangerouslyDisableSandbox: true`.

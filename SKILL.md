@@ -60,6 +60,7 @@ escalates, keeping the branch and the diff (DIRECT.md, ROUTING.md).
 | -v | -V | Verify — research the plan online; must trace at least one query or state why none |
 | -o | -O | Obsidian — load vault context; must cite the notes it read or state the vault is silent |
 | -n | -N | Note — session note at end |
+| -m | -M | Code metrics (Uncle Bob) — code-metrics dup + crap at validate, mutate too on High-stakes; writes 04-metrics.md |
 
 Branch-first and on-disk persistence are INVARIANTS of every tier, not
 options: the branch is cut per the Git section of CLAUDE.md, and the run's
@@ -72,7 +73,7 @@ Flag precedence, highest first:
 2. The tier's default set (table above).
 3. OFF.
 
-Never on by default — must be typed: `-q`, `-2`, `-p`, `-k`, `-v`.
+Never on by default — must be typed: `-q`, `-2`, `-p`, `-k`, `-v`, `-m`.
 `-e` is a default of High-stakes only. `-f` is a default of every tier
 except Direct, which runs its own red test inline (`steps/DIRECT.md`).
 State the tier and the resolved flags in `00-context.md`.

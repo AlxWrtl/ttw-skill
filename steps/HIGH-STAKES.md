@@ -83,7 +83,7 @@ A degraded external run is never a pass.
 The coordinator surfaces BLOCKED as an UNRUN check — never as green, and
 never as a reason to stop the run: the machine gate, and on high-stakes, the
 Fable fallback it triggers, decide the run's colour.
-External verify runs one pass; triage correctness against the ACs only — style findings dismissed by category.
+External verify runs one pass, plus one re-run after the fix of confirmed findings (step-04), never a third; triage correctness against the ACs only — style findings dismissed by category.
 
 ## Worktree isolation — for a different problem than collisions
 

@@ -13,7 +13,12 @@ deterministic, so they do not care who wrote the diff.
 
 Default flags: `-pr` only; -o and -n run only when typed — a vault
 read and a session note buy nothing on a one-line change. Typed `-t`,
-`-x` or `-e` are honoured: they run after step 6 as in Standard.
+`-x`, `-e` or `-m` are honoured: they run after step 6 as in Standard.
+Typed `-o` runs before step 3: read
+[step-01b-obsidian-context.md](step-01b-obsidian-context.md) and execute
+it, writing `01b-obsidian.md` with its graph query and project-first
+cascade. Never an inline vault read instead: it skips graphify, and B7
+cannot count it.
 
 ## Steps (in order)
 
@@ -58,7 +63,9 @@ read and a session note buy nothing on a one-line change. Typed `-t`,
    `nix flake check --no-build`, `cargo check`). Record its verdict.
    Already red → name the failing check; only that check may be blamed
    on the baseline later. Only a `sudo` gate is skipped (COMMANDS.md),
-   and a skipped baseline dismisses nothing as pre-existing.
+   and a skipped baseline dismisses nothing as pre-existing. With
+   `.github/workflows`, also run `ttw-ci-gate --run`; record its
+   PASS/FAIL lines.
 4. **Red first.** Before the edit, write the test, check or canary that
    proves the AC (its path goes in `Files:`), run it, and record the red
    output in `00-context.md` as `Test-first: {command} -> red: {line}`.
@@ -69,7 +76,9 @@ read and a session note buy nothing on a one-line change. Typed `-t`,
 5. **Edit inline**, only the paths in `Files:`. A path outside `Files:`
    is not a quiet addition — it is a re-tier: go to step 7's escalation.
 6. **Machine gate.** Re-run the baseline command; read the exit code and
-   the tail only (ORCHESTRATION.md "Coordinator context").
+   the tail only (ORCHESTRATION.md "Coordinator context"). Re-run
+   `ttw-ci-gate --run` if step 3 did. Compare on the `<file>:<job>` +
+   name key: a FAIL whose key was PASS or absent at baseline is red.
 7. **Tier re-check.** Run `ttw-tier --base {trunk}` and read its verdict
    line. Escalate when it is anything but `tier=direct`, OR the gate is
    red (a red gate never gets a fix inline):
@@ -89,7 +98,8 @@ read and a session note buy nothing on a one-line change. Typed `-t`,
    (`-pr` default; `-PR` opts out of the whole ship step — no commit, the
    change stays uncommitted on the run's branch, as in Standard). Fill the `## Tokens`
    end row, then present: tier, files, gate verdict, `ttw-tier` line,
-   PR link.
+   PR link, and any `ci-only` lines of step 6 under
+   `CI-only (not run locally)` (listed, never counted green).
 
 ## What Direct never does
 

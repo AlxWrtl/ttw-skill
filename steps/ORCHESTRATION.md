@@ -40,7 +40,8 @@ NEVER let a phase spawn inherit the session model — ALWAYS pass an explicit
 
 The Analyze fan-out row is enforced by the research-model hook (PreToolUse
 on Agent): an Explore or codebase-navigator spawn whose `model` is not
-`haiku`, absent included, is denied.
+`haiku`, absent included, is denied, and so is any other spawn with no
+`model` (`fork` exempt: it always runs on the parent's model).
 
 Haiku locates, maps and audits; it does not explain causes. A "why does X
 happen" question (root cause, tracing a library's internals, a fix
@@ -100,7 +101,8 @@ The coordinator reads command output in the tail only: a command whose
 output can exceed ~30 lines runs in the background or with its output cut to
 the tail, and the coordinator reads the exit code plus the last failing lines.
 A verdict with no exit code is an unrun check.
-Sandbox-excluded commands (bare `nix flake check`, `git push`, `gh`, `codex`)
+Sandbox-excluded commands (bare `nix flake check`, `git push`, `gh`, `codex`,
+`ttw-verify-external`)
 stay standalone — no pipe — so run them with `run_in_background` and read
 the tail of the output file.
 A gate runner subagent (`model: sonnet`, never haiku) is reserved for
@@ -139,7 +141,7 @@ After EVERY execute wave, verify — depth scaled to blast-radius:
    naming 06-resolve.md or a correction round carries
    `TTW-CORRECTION-ROUND: none`. A round goes through Agent or SendMessage,
    both counted, and counts once the spawn/send is attempted, even if later
-   denied. A SendMessage correction goes only to an agent that was spawned on `model: opus`; otherwise spawn a new opus agent.
+   denied. A counted round sent while require-ttw is re-armed (no ttw skill call since the user's last message) is denied uncounted: invoke the ttw skill, then resend the brief. Every correction brief also carries one line `TTW-FAILING: <id>, <id>` naming the acceptance criteria still failing: past the cap, a round goes out on its own only on progress (a non-empty set, never an earlier round's set, at least one id of the previous round's set gone, new ids allowed), up to 5 rounds in all plus one per grant; resending the latest round's brief unchanged is free once. A SendMessage correction goes only to an agent that was spawned on `model: opus`; otherwise spawn a new opus agent.
    Denied (budget spent) → STOP: deliver with
    the residuals list verbatim and the failing output, or ask the user to type `ttw: +1 tour` alone on a line — the correction-grant hook (UserPromptSubmit) reads the raw prompt and grants that run one more round per prompt; a plain "continue" grants nothing. Without a grant, never run the round inline: the coordinator never grades its own work.
    Never weaken a check to make it pass, never declare success on partial

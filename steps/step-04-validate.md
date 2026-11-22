@@ -32,8 +32,33 @@ no other pass in this run. The tally is what the metrics probe reads as
 B5 (did the pass change the run); a hook recalls a missing one when
 04-validate.md is written.
 
+Tally confirmed > 0 → the round that fixes those findings changes the
+diff the verdict describes, so after that round re-run
+`ttw-verify-external` ONCE with the same --base and --acs and
+`--out .claude/output/ttw/{task-id}/04-external-verify-2.json`.
+Triage that pass into `04-external-triage-2.md`, same line format and
+tally; its confirmed findings go through the normal correction budget.
+Never a third pass. A BLOCKED re-run follows the Fable-fallback rule
+below. After `gh pr create`, the ttw-metrics-probe hook names a missing
+04-external-verify-2.json.
+
 No usable external verdict on high-stakes (BLOCKED, or -E typed) → spawn the Fable fallback
 (ORCHESTRATION.md) and record its cause in 04-validate.md.
+
+## Code metrics (`-m`)
+
+If `-m` is active, after the machine gate run from the project root
+`code-metrics dup --base {trunk}`, then `code-metrics crap --base {trunk}
+--coverage-command "CMD"` when the project has a coverage command (pick it
+per the code-metrics skill); on High-stakes add `code-metrics mutate
+--base {trunk} --test-command "CMD"`. Exit 0 = clean, 1 = findings,
+2 = not run: an unrun check, never a green one (`code-metrics setup` runs
+outside the sandbox). Write `.claude/output/ttw/{task-id}/04-metrics.md`:
+each command, its exit code and the kept findings, or
+one line `Metrics: skipped — {reason}` per mode not run. Findings join the
+correction list like any verify finding:
+a dup pair touching the diff means reuse the existing helper,
+a surviving mutant means a missing assertion; a dismissed one states its reason.
 
 ## Verification Checklist
 
@@ -57,6 +82,11 @@ No usable external verdict on high-stakes (BLOCKED, or -E typed) → spawn the F
      (no sudo) yourself. Only `sudo darwin-rebuild switch` is privileged:
      mark such ACs **deferred to user** and add the command to the
      "Run yourself" list.
+   - CI: when the repo has `.github/workflows`, run `ttw-ci-gate --run`.
+     Compare on the `<file>:<job>` + name key with step-00's lines: a
+     FAIL whose key was PASS or absent at baseline is this run's red.
+     Copy its `ci-only` lines into `04-validate.md` under the heading
+     `CI-only (not run locally)`: listed, never counted green.
 
 3. **Integration Check**: verify that:
    - All imports resolve
